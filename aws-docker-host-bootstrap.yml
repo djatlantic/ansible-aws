@@ -1,5 +1,6 @@
 ---
 - hosts: localhost
   roles:
-   - { role: new_docker_dir, new_disk: /dev/xvdb }
+   - { role: new_docker_dir, new_disk: /dev/xvdf }
+   - { role: new_disk, new_disk: /dev/xvdb, dest_dir: /mnt }
 

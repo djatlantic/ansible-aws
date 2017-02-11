@@ -8,9 +8,5 @@
   shell: /sbin/mkfs.ext4 {{ new_disk }}
   when: "'ext4'not in disk_init.stdout"
 
-- name: rm /var/lib/docker/*
-  shell: rm -rf /var/lib/docker/* 
-  when: "'ext4'not in disk_init.stdout"
-
 - name: mount {{ new_disk }} as /var/lib/docker
-  mount: name=/var/lib/docker src={{ new_disk }} fstype=ext4 state=mounted 
+  mount: name={{ dest_dir }} src={{ new_disk }} fstype=ext4 state=mounted 
