@@ -1,0 +1,6 @@
+---
+- name: install sharutils
+  yum: name=sharutils state=present
+
+- name: get instance tags
+  action: aws_tags
