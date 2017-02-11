@@ -1,0 +1,54 @@
+---
+- name: install required rpms
+  yum: name={{ item }} state=present
+  with_items:
+          - yum-utils
+          - gcc 
+          - python-devel  
+          - git 
+          - python-markupsafe 
+          - libyaml-devel
+          - openssl-devel
+          - python-pip
+
+- name: install ansible
+  pip: name=ansible state=present
+
+- name: set up docker stable repo
+  shell: yum-config-manager --add-repo  https://docs.docker.com/engine/installation/linux/repo_files/centos/docker.repo
+
+- name: makecache fast
+  shell: yum makecache fast
+
+- name: install docker-engine
+  yum: name=docker-engine-{{ docker_ver }} state=present
+
+- name: "add user {{ docker_user }} to docker group"
+  user: name={{ docker_user }} groups=docker
+
+- name: enable docker to start at boot  
+  systemd: name=docker enabled=yes daemon_reload=yes 
+  when: docker_state is undefined
+
+#- name: enable docker to start at boot
+#  systemd: name=docker enabled=yes daemon_reload=yes state={{ docker_state }}
+#  when: docker_state is defined
+
+- name: enable ip forward
+  sysctl: 
+    name: "{{ item }}"
+    value: 1
+    state: present
+    reload: yes
+  with_items:
+          - net.ipv4.conf.all.forwarding
+          - net.ipv4.conf.eth0.forwarding
+
+- name: enable cgroup
+  lineinfile: dest=/etc/default/grub line=GRUB_CMDLINE_LINUX="console=tty0 crashkernel=auto console=ttyS0,115200 cgroup_enable=memory swapaccount=1"
+  register: cgroup_enabled
+
+- name: update-grub
+  shell:  grub2-mkconfig -o /boot/grub2/grub.cfg 
+  when: cgroup_enabled|changed
+
